@@ -1,1 +1,2 @@
-SELECT * FROM
+#ETIQUETA DE PUERTAS
+ "orden"  || '_' ||  "tipo"  || '_' ||  "num_municipal" 
