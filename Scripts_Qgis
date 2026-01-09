@@ -1,2 +1,21 @@
 #ETIQUETA DE PUERTAS
- "orden"  || '_' ||  "tipo"  || '_' ||  "num_municipal" 
+ "orden"  || '_' ||  "tipo"  || '_' ||  "num_municipal"
+#SELECCIONAR PISOS ALTOS SQL
+SELECT t.*
+FROM tg_construccion_2 t
+JOIN (
+    SELECT
+        cod_mzna,
+        cod_lote,
+        cod_edific,
+        MAX(cod_piso) AS max_piso
+    FROM tg_construccion_2
+    GROUP BY
+        cod_mzna,
+        cod_lote,
+        cod_edific
+) m
+ON t.cod_mzna = m.cod_mzna
+AND t.cod_lote = m.cod_lote
+AND t.cod_edific = m.cod_edific
+AND t.cod_piso = m.max_piso;
