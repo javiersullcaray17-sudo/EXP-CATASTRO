@@ -1,5 +1,5 @@
 #ETIQUETA DE PUERTAS
- "orden"  || '_' ||  "tipo"  || '_' ||  "num_municipal"
+ "orden"  || '_' ||  "tipo"  || '_' ||  "num_munici" 
 #SELECCIONAR PISOS ALTOS SQL
 SELECT t.*
 FROM tg_construccion_2 t
