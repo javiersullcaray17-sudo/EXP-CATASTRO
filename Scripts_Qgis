@@ -53,3 +53,19 @@ SELECT
   ST_NumGeometries(geom) AS num_partes
 FROM tg_construccion
 WHERE ST_NumGeometries(geom) > 1;
+
+#SOLAPAMIENTO DEL MISMO PISO
+SELECT
+  a.fid AS fid1,
+  b.fid AS fid2,
+  a.cod_piso,
+  ST_Area(ST_Intersection(a.geom, b.geom)) AS area_solapada,
+  ST_Intersection(a.geom, b.geom) AS geometry
+FROM tg_construccion AS a
+JOIN tg_construccion AS b
+  ON a.cod_piso = b.cod_piso
+ AND a.fid < b.fid
+WHERE
+  ST_Intersects(a.geom, b.geom)
+  AND ST_Area(ST_Intersection(a.geom, b.geom)) > 0.1;
+
