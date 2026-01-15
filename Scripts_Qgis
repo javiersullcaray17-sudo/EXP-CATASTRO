@@ -1,5 +1,7 @@
 #ETIQUETA DE PUERTAS
  "orden"  || '_' ||  "tipo"  || '_' ||  "num_munici" 
+
+
 #SELECCIONAR PISOS ALTOS SQL
 SELECT t.*
 FROM tg_construccion_2 t
@@ -19,3 +21,35 @@ ON t.cod_mzna = m.cod_mzna
 AND t.cod_lote = m.cod_lote
 AND t.cod_edific = m.cod_edific
 AND t.cod_piso = m.max_piso;
+
+#SABER SI TIENE VERTICES DUPLICADOS
+SELECT
+  fid
+FROM tg_construccion
+WHERE
+  geom IS NOT NULL
+  AND ST_NPoints(geom) <> ST_NPoints(ST_SnapToGrid(geom, 0));
+
+
+#SABER SI TIENE GEOMETRIA NULA,VACIA, INVALIDA
+SELECT
+  fid,
+  CASE
+    WHEN geom IS NULL THEN 'GEOMETRIA NULA'
+    WHEN ST_IsEmpty(geom)=1 THEN 'GEOMETRIA VACIA'
+    WHEN ST_IsValid(geom)=0 THEN 'GEOMETRIA INVALIDA'
+  END AS estado
+FROM tg_construccion
+WHERE
+  geom IS NULL
+  OR ST_IsEmpty(geom)=1
+  OR ST_IsValid(geom)=0;
+
+
+
+# GEOMETRIAS MULTIPART
+SELECT
+  fid,
+  ST_NumGeometries(geom) AS num_partes
+FROM tg_construccion
+WHERE ST_NumGeometries(geom) > 1;
