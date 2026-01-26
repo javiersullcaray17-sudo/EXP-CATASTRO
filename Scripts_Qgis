@@ -69,3 +69,12 @@ WHERE
   ST_Intersects(a.geom, b.geom)
   AND ST_Area(ST_Intersection(a.geom, b.geom)) > 0.1;
 
+#PUERTA PRINCIPAL EN EDIFICA
+SELECT e.*
+FROM tg_edifica e
+LEFT JOIN tg_puerta p
+  ON ST_Intersects(e.geom, p.geom)
+ AND p.tipo = '01'
+WHERE p.tipo IS NULL;
+
+
