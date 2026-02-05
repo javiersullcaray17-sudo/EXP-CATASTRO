@@ -1,6 +1,10 @@
 #ETIQUETA DE PUERTAS
  "orden"  || '_' ||  "tipo"  || '_' ||  "num_munici" 
 
+#TIPO DE GEOMETRIA EN QGIS
+SELECT DISTINCT GeometryType(geom)
+FROM nombre_de_tu_tabla;
+
 
 #SELECCIONAR PISOS ALTOS SQL
 SELECT t.*
