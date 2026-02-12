@@ -213,4 +213,42 @@ WHERE
    OR (p.ubigeo    != lote.ubigeo    OR (p.ubigeo IS NULL AND lote.ubigeo IS NOT NULL) OR (p.ubigeo IS NOT NULL AND lote.ubigeo IS NULL))
    OR (p.cod_sector != lote.cod_sector OR (p.cod_sector IS NULL AND lote.cod_sector IS NOT NULL) OR (p.cod_sector IS NOT NULL AND lote.cod_sector IS NULL));
 
+#COMPARAR EDIFICA CON LOTES
+-- Crear centroides de tg_edifica
+WITH edificas_punto AS (
+    SELECT
+        rowid AS edifica_rowid,
+        ST_Centroid(geom) AS geom,
+        cod_mzna,
+        cod_lote,
+        ubigeo,
+        cod_sector
+    FROM tg_edifica
+)
+
+-- Comparación con los lotes
+SELECT
+    e.edifica_rowid,
+    lote.rowid AS lote_rowid,
+    e.cod_mzna AS edifica_mzna,
+    lote.cod_mzna AS lote_mzna,
+    e.cod_lote AS edifica_lote,
+    lote.cod_lote AS lote_lote,
+    e.ubigeo AS edifica_ubigeo,
+    lote.ubigeo AS lote_ubigeo,
+    e.cod_sector AS edifica_sector,
+    lote.cod_sector AS lote_sector,
+    CASE
+        WHEN lote.rowid IS NULL THEN 'FUERA DE LOTE'
+        ELSE 'DIFERENCIA EN CAMPOS'
+    END AS error_tipo
+FROM edificas_punto AS e
+LEFT JOIN tg_lote AS lote
+  ON ST_Contains(lote.geom, e.geom)
+WHERE
+      lote.rowid IS NULL
+   OR (e.cod_mzna != lote.cod_mzna OR (e.cod_mzna IS NULL AND lote.cod_mzna IS NOT NULL) OR (e.cod_mzna IS NOT NULL AND lote.cod_mzna IS NULL))
+   OR (e.cod_lote  != lote.cod_lote  OR (e.cod_lote IS NULL AND lote.cod_lote IS NOT NULL) OR (e.cod_lote IS NOT NULL AND lote.cod_lote IS NULL))
+   OR (e.ubigeo    != lote.ubigeo    OR (e.ubigeo IS NULL AND lote.ubigeo IS NOT NULL) OR (e.ubigeo IS NOT NULL AND lote.ubigeo IS NULL))
+   OR (e.cod_sector != lote.cod_sector OR (e.cod_sector IS NULL AND lote.cod_sector IS NOT NULL) OR (e.cod_sector IS NOT NULL AND lote.cod_sector IS NULL));
 
