@@ -116,5 +116,101 @@ JOIN tg_edifica e
   ON ST_Within(ST_Centroid(c.geom), e.geom)
 WHERE c.cod_edific != e.cod_edific;
 
+#COMPARAR CONSTRUCCIONES CON LOTES
+-- Centroides de tg_construccion
+WITH construcciones1 AS (
+    SELECT 
+        rowid AS construccion_rowid,
+        ST_Centroid(geom) AS geom,
+        cod_mzna,
+        cod_lote,
+        ubigeo,
+        cod_sector
+    FROM tg_construccion
+),
+-- Centroides de tg_construccion_2
+construcciones2 AS (
+    SELECT 
+        rowid AS construccion_rowid,
+        ST_Centroid(geom) AS geom,
+        cod_mzna,
+        cod_lote,
+        ubigeo,
+        cod_sector
+    FROM tg_construccion_2
+)
+
+-- Comparación de tg_construccion con lote
+SELECT
+    'tg_construccion' AS capa,
+    c.construccion_rowid,
+    lote.rowid AS lote_rowid,
+    c.cod_mzna AS construccion_mzna,
+    lote.cod_mzna AS lote_mzna,
+    c.cod_lote AS construccion_lote,
+    lote.cod_lote AS lote_lote,
+    c.ubigeo AS construccion_ubigeo,
+    lote.ubigeo AS lote_ubigeo,
+    c.cod_sector AS construccion_sector,
+    lote.cod_sector AS lote_sector
+FROM construcciones1 AS c
+JOIN tg_lote AS lote
+  ON ST_Contains(lote.geom, c.geom)
+WHERE 
+    (c.cod_mzna != lote.cod_mzna OR (c.cod_mzna IS NULL AND lote.cod_mzna IS NOT NULL) OR (c.cod_mzna IS NOT NULL AND lote.cod_mzna IS NULL))
+ OR (c.cod_lote  != lote.cod_lote  OR (c.cod_lote IS NULL AND lote.cod_lote IS NOT NULL) OR (c.cod_lote IS NOT NULL AND lote.cod_lote IS NULL))
+ OR (c.ubigeo    != lote.ubigeo    OR (c.ubigeo IS NULL AND lote.ubigeo IS NOT NULL) OR (c.ubigeo IS NOT NULL AND lote.ubigeo IS NULL))
+ OR (c.cod_sector != lote.cod_sector OR (c.cod_sector IS NULL AND lote.cod_sector IS NOT NULL) OR (c.cod_sector IS NOT NULL AND lote.cod_sector IS NULL))
+
+UNION ALL
+
+-- Comparación de tg_construccion_2 con lote
+SELECT
+    'tg_construccion_2' AS capa,
+    c.construccion_rowid,
+    lote.rowid AS lote_rowid,
+    c.cod_mzna AS construccion_mzna,
+    lote.cod_mzna AS lote_mzna,
+    c.cod_lote AS construccion_lote,
+    lote.cod_lote AS lote_lote,
+    c.ubigeo AS construccion_ubigeo,
+    lote.ubigeo AS lote_ubigeo,
+    c.cod_sector AS construccion_sector,
+    lote.cod_sector AS lote_sector
+FROM construcciones2 AS c
+JOIN tg_lote AS lote
+  ON ST_Contains(lote.geom, c.geom)
+WHERE 
+    (c.cod_mzna != lote.cod_mzna OR (c.cod_mzna IS NULL AND lote.cod_mzna IS NOT NULL) OR (c.cod_mzna IS NOT NULL AND lote.cod_mzna IS NULL))
+ OR (c.cod_lote  != lote.cod_lote  OR (c.cod_lote IS NULL AND lote.cod_lote IS NOT NULL) OR (c.cod_lote IS NOT NULL AND lote.cod_lote IS NULL))
+ OR (c.ubigeo    != lote.ubigeo    OR (c.ubigeo IS NULL AND lote.ubigeo IS NOT NULL) OR (c.ubigeo IS NOT NULL AND lote.ubigeo IS NULL))
+ OR (c.cod_sector != lote.cod_sector OR (c.cod_sector IS NULL AND lote.cod_sector IS NOT NULL) OR (c.cod_sector IS NOT NULL AND lote.cod_sector IS NULL));
+
+#COMPARAR PUERTAS CON LOTES
+-- Comparación de puertas con lotes
+SELECT
+    p.rowid AS puerta_rowid,
+    lote.rowid AS lote_rowid,
+    p.cod_mzna AS puerta_mzna,
+    lote.cod_mzna AS lote_mzna,
+    p.cod_lote AS puerta_lote,
+    lote.cod_lote AS lote_lote,
+    p.ubigeo AS puerta_ubigeo,
+    lote.ubigeo AS lote_ubigeo,
+    p.cod_sector AS puerta_sector,
+    lote.cod_sector AS lote_sector,
+    CASE 
+        WHEN lote.rowid IS NULL THEN 'FUERA DE LOTE'
+        ELSE 'DIFERENCIA EN CAMPOS'
+    END AS error_tipo
+FROM tg_puerta AS p
+LEFT JOIN tg_lote AS lote
+  ON ST_Contains(lote.geom, p.geom)
+WHERE 
+      lote.rowid IS NULL
+   OR (p.cod_mzna != lote.cod_mzna OR (p.cod_mzna IS NULL AND lote.cod_mzna IS NOT NULL) OR (p.cod_mzna IS NOT NULL AND lote.cod_mzna IS NULL))
+   OR (p.cod_lote  != lote.cod_lote  OR (p.cod_lote IS NULL AND lote.cod_lote IS NOT NULL) OR (p.cod_lote IS NOT NULL AND lote.cod_lote IS NULL))
+   OR (p.ubigeo    != lote.ubigeo    OR (p.ubigeo IS NULL AND lote.ubigeo IS NOT NULL) OR (p.ubigeo IS NOT NULL AND lote.ubigeo IS NULL))
+   OR (p.cod_sector != lote.cod_sector OR (p.cod_sector IS NULL AND lote.cod_sector IS NOT NULL) OR (p.cod_sector IS NOT NULL AND lote.cod_sector IS NULL));
 
 
