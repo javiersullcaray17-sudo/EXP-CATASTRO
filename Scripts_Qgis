@@ -81,4 +81,40 @@ LEFT JOIN tg_puerta p
  AND p.tipo = '01'
 WHERE p.tipo IS NULL;
 
+#COMPARAR EDIFICAS QGIS
+-- 1️⃣ Construcciones fuera de tg_edifica
+SELECT 
+    c.ubigeo,
+    c.cod_sector,
+    c.cod_mzna,
+    c.cod_lote,
+    c.cod_edific AS construccion_cod,
+    NULL AS edifica_cod,
+    'Fuera de tg_edifica' AS error_tipo,
+    'El punto no cae dentro de tg_edifica' AS detalle,
+    ST_Centroid(c.geom) AS geom
+FROM tg_construccion c
+LEFT JOIN tg_edifica e
+  ON ST_Within(ST_Centroid(c.geom), e.geom)
+WHERE e.cod_edific IS NULL
+
+UNION ALL
+
+-- 2️⃣ Diferencia de cod_edific dentro de tg_edifica
+SELECT
+    c.ubigeo,
+    c.cod_sector,
+    c.cod_mzna,
+    c.cod_lote,
+    c.cod_edific AS construccion_cod,
+    e.cod_edific AS edifica_cod,
+    'Diferencia cod_edific' AS error_tipo,
+    'Construccion diferente a Edifica' AS detalle,
+    ST_Centroid(c.geom) AS geom
+FROM tg_construccion c
+JOIN tg_edifica e
+  ON ST_Within(ST_Centroid(c.geom), e.geom)
+WHERE c.cod_edific != e.cod_edific;
+
+
 
