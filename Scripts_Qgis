@@ -252,3 +252,157 @@ WHERE
    OR (e.ubigeo    != lote.ubigeo    OR (e.ubigeo IS NULL AND lote.ubigeo IS NOT NULL) OR (e.ubigeo IS NOT NULL AND lote.ubigeo IS NULL))
    OR (e.cod_sector != lote.cod_sector OR (e.cod_sector IS NULL AND lote.cod_sector IS NOT NULL) OR (e.cod_sector IS NOT NULL AND lote.cod_sector IS NULL));
 
+#RESUMEN_COMPARAR_CAMPOS
+-- Crear puntos de todas las capas de construcción y edificación
+WITH construcciones1 AS (
+    SELECT 
+        rowid AS rowid_construccion,
+        ST_Centroid(geom) AS geom,
+        cod_mzna,
+        cod_lote,
+        ubigeo,
+        cod_sector
+    FROM tg_construccion
+),
+construcciones2 AS (
+    SELECT 
+        rowid AS rowid_construccion2,
+        ST_Centroid(geom) AS geom,
+        cod_mzna,
+        cod_lote,
+        ubigeo,
+        cod_sector
+    FROM tg_construccion_2
+),
+edificas AS (
+    SELECT
+        rowid AS rowid_edifica,
+        ST_Centroid(geom) AS geom,
+        cod_mzna,
+        cod_lote,
+        ubigeo,
+        cod_sector
+    FROM tg_edifica
+),
+puertas AS (
+    SELECT
+        rowid AS rowid_puerta,
+        geom,
+        cod_mzna,
+        cod_lote,
+        ubigeo,
+        cod_sector
+    FROM tg_puerta
+)
+
+-- Unión de todas las comparaciones
+SELECT
+    'tg_construccion' AS capa,
+    c.rowid_construccion AS objeto_rowid,
+    lote.rowid AS lote_rowid,
+    c.cod_mzna AS objeto_mzna,
+    lote.cod_mzna AS lote_mzna,
+    c.cod_lote AS objeto_lote,
+    lote.cod_lote AS lote_lote,
+    c.ubigeo AS objeto_ubigeo,
+    lote.ubigeo AS lote_ubigeo,
+    c.cod_sector AS objeto_sector,
+    lote.cod_sector AS lote_sector,
+    CASE
+        WHEN lote.rowid IS NULL THEN 'FUERA DE LOTE'
+        ELSE 'DIFERENCIA EN CAMPOS'
+    END AS error_tipo
+FROM construcciones1 AS c
+LEFT JOIN tg_lote AS lote
+  ON ST_Contains(lote.geom, c.geom)
+WHERE
+      lote.rowid IS NULL
+   OR (c.cod_mzna != lote.cod_mzna OR (c.cod_mzna IS NULL AND lote.cod_mzna IS NOT NULL) OR (c.cod_mzna IS NOT NULL AND lote.cod_mzna IS NULL))
+   OR (c.cod_lote  != lote.cod_lote  OR (c.cod_lote IS NULL AND lote.cod_lote IS NOT NULL) OR (c.cod_lote IS NOT NULL AND lote.cod_lote IS NULL))
+   OR (c.ubigeo    != lote.ubigeo    OR (c.ubigeo IS NULL AND lote.ubigeo IS NOT NULL) OR (c.ubigeo IS NOT NULL AND lote.ubigeo IS NULL))
+   OR (c.cod_sector != lote.cod_sector OR (c.cod_sector IS NULL AND lote.cod_sector IS NOT NULL) OR (c.cod_sector IS NOT NULL AND lote.cod_sector IS NULL))
+
+UNION ALL
+
+SELECT
+    'tg_construccion_2' AS capa,
+    c.rowid_construccion2 AS objeto_rowid,
+    lote.rowid AS lote_rowid,
+    c.cod_mzna AS objeto_mzna,
+    lote.cod_mzna AS lote_mzna,
+    c.cod_lote AS objeto_lote,
+    lote.cod_lote AS lote_lote,
+    c.ubigeo AS objeto_ubigeo,
+    lote.ubigeo AS lote_ubigeo,
+    c.cod_sector AS objeto_sector,
+    lote.cod_sector AS lote_sector,
+    CASE
+        WHEN lote.rowid IS NULL THEN 'FUERA DE LOTE'
+        ELSE 'DIFERENCIA EN CAMPOS'
+    END AS error_tipo
+FROM construcciones2 AS c
+LEFT JOIN tg_lote AS lote
+  ON ST_Contains(lote.geom, c.geom)
+WHERE
+      lote.rowid IS NULL
+   OR (c.cod_mzna != lote.cod_mzna OR (c.cod_mzna IS NULL AND lote.cod_mzna IS NOT NULL) OR (c.cod_mzna IS NOT NULL AND lote.cod_mzna IS NULL))
+   OR (c.cod_lote  != lote.cod_lote  OR (c.cod_lote IS NULL AND lote.cod_lote IS NOT NULL) OR (c.cod_lote IS NOT NULL AND lote.cod_lote IS NULL))
+   OR (c.ubigeo    != lote.ubigeo    OR (c.ubigeo IS NULL AND lote.ubigeo IS NOT NULL) OR (c.ubigeo IS NOT NULL AND lote.ubigeo IS NULL))
+   OR (c.cod_sector != lote.cod_sector OR (c.cod_sector IS NULL AND lote.cod_sector IS NOT NULL) OR (c.cod_sector IS NOT NULL AND lote.cod_sector IS NULL))
+
+UNION ALL
+
+SELECT
+    'tg_edifica' AS capa,
+    e.rowid_edifica AS objeto_rowid,
+    lote.rowid AS lote_rowid,
+    e.cod_mzna AS objeto_mzna,
+    lote.cod_mzna AS lote_mzna,
+    e.cod_lote AS objeto_lote,
+    lote.cod_lote AS lote_lote,
+    e.ubigeo AS objeto_ubigeo,
+    lote.ubigeo AS lote_ubigeo,
+    e.cod_sector AS objeto_sector,
+    lote.cod_sector AS lote_sector,
+    CASE
+        WHEN lote.rowid IS NULL THEN 'FUERA DE LOTE'
+        ELSE 'DIFERENCIA EN CAMPOS'
+    END AS error_tipo
+FROM edificas AS e
+LEFT JOIN tg_lote AS lote
+  ON ST_Contains(lote.geom, e.geom)
+WHERE
+      lote.rowid IS NULL
+   OR (e.cod_mzna != lote.cod_mzna OR (e.cod_mzna IS NULL AND lote.cod_mzna IS NOT NULL) OR (e.cod_mzna IS NOT NULL AND lote.cod_mzna IS NULL))
+   OR (e.cod_lote  != lote.cod_lote  OR (e.cod_lote IS NULL AND lote.cod_lote IS NOT NULL) OR (e.cod_lote IS NOT NULL AND lote.cod_lote IS NULL))
+   OR (e.ubigeo    != lote.ubigeo    OR (e.ubigeo IS NULL AND lote.ubigeo IS NOT NULL) OR (e.ubigeo IS NOT NULL AND lote.ubigeo IS NULL))
+   OR (e.cod_sector != lote.cod_sector OR (e.cod_sector IS NULL AND lote.cod_sector IS NOT NULL) OR (e.cod_sector IS NOT NULL AND lote.cod_sector IS NULL))
+
+UNION ALL
+
+SELECT
+    'tg_puerta' AS capa,
+    p.rowid_puerta AS objeto_rowid,
+    lote.rowid AS lote_rowid,
+    p.cod_mzna AS objeto_mzna,
+    lote.cod_mzna AS lote_mzna,
+    p.cod_lote AS objeto_lote,
+    lote.cod_lote AS lote_lote,
+    p.ubigeo AS objeto_ubigeo,
+    lote.ubigeo AS lote_ubigeo,
+    p.cod_sector AS objeto_sector,
+    lote.cod_sector AS lote_sector,
+    CASE
+        WHEN lote.rowid IS NULL THEN 'FUERA DE LOTE'
+        ELSE 'DIFERENCIA EN CAMPOS'
+    END AS error_tipo
+FROM puertas AS p
+LEFT JOIN tg_lote AS lote
+  ON ST_Contains(lote.geom, p.geom)
+WHERE
+      lote.rowid IS NULL
+   OR (p.cod_mzna != lote.cod_mzna OR (p.cod_mzna IS NULL AND lote.cod_mzna IS NOT NULL) OR (p.cod_mzna IS NOT NULL AND lote.cod_mzna IS NULL))
+   OR (p.cod_lote  != lote.cod_lote  OR (p.cod_lote IS NULL AND lote.cod_lote IS NOT NULL) OR (p.cod_lote IS NOT NULL AND lote.cod_lote IS NULL))
+   OR (p.ubigeo    != lote.ubigeo    OR (p.ubigeo IS NULL AND lote.ubigeo IS NOT NULL) OR (p.ubigeo IS NOT NULL AND lote.ubigeo IS NULL))
+   OR (p.cod_sector != lote.cod_sector OR (p.cod_sector IS NULL AND lote.cod_sector IS NOT NULL) OR (p.cod_sector IS NOT NULL AND lote.cod_sector IS NULL));
+
